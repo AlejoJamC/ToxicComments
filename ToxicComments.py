@@ -4,6 +4,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Load the English NLP model from spaCy
 print("Loading spaCy model...")
@@ -37,8 +38,8 @@ if __name__ == "__main__":
 
     # Load the datasets
     print("Loading datasets...")
-    # train_df = pd.read_csv(DATA_PATH + "train.csv").head(5000)  # DEV
-    train_df = pd.read_csv(DATA_PATH + "train.csv")  # PROD
+    train_df = pd.read_csv(DATA_PATH + "train.csv").head(1000)  # DEV
+    # train_df = pd.read_csv(DATA_PATH + "train.csv")  # PROD
     print(f"{len(train_df)} training samples loaded.")
     # test_df = pd.read_csv(DATA_PATH + "test.csv")
     # test_labels_df = pd.read_csv(DATA_PATH + "test_labels.csv")
@@ -77,11 +78,22 @@ if __name__ == "__main__":
     plt.ylabel("Amount")
     plt.xlabel("Toxicity Class")
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    # Save the plot
+    plt.savefig("./resources/class_distribution.png")
 
     # Get top words for each class
     print("Extracting most common words for each class...")
-    top_words = get_most_common_words(train_df[train_df['toxic'] == 1]['comment_text'])
+    top_words = get_most_common_words("toxic")
     print("Top words in toxic comments:")
     for word, count in top_words:
         print(f"{word:<15}: {count}")
+
+    # TF-IDF Vectorization
+    print("Starting TF-IDF vectorization...")
+    tfidf = TfidfVectorizer(max_features=10000, ngram_range=(1, 2))
+    X_tfidf = tfidf.fit_transform(train_df["comment_text"])
+
+    print("TF-IDF matrix shape:", X_tfidf.shape)
+    print("First 10 features:", tfidf.get_feature_names_out()[:10])
+
