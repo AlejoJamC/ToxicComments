@@ -5,6 +5,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
+from sklearn.metrics import classification_report, roc_auc_score
+
 
 # Load the English NLP model from spaCy
 print("Loading spaCy model...")
@@ -96,4 +102,34 @@ if __name__ == "__main__":
 
     print("TF-IDF matrix shape:", X_tfidf.shape)
     print("First 10 features:", tfidf.get_feature_names_out()[:10])
+
+    # Use only the 'toxic' column as the target for binary classification
+    y = train_df["toxic"]
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2, random_state=42)
+
+    print("\nTraining Logistic Regression...")
+    lr_model = LogisticRegression(max_iter=1000)
+    lr_model.fit(X_train, y_train)
+    y_pred_lr = lr_model.predict(X_test)
+    print("Logistic Regression Classification Report:")
+    print(classification_report(y_test, y_pred_lr))
+    print("AUC:", roc_auc_score(y_test, lr_model.predict_proba(X_test)[:, 1]))
+
+    print("\nTraining Random Forest...")
+    rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf_model.fit(X_train, y_train)
+    y_pred_rf = rf_model.predict(X_test)
+    print("Random Forest Classification Report:")
+    print(classification_report(y_test, y_pred_rf))
+    print("AUC:", roc_auc_score(y_test, rf_model.predict_proba(X_test)[:, 1]))
+
+    print("\nTraining SVM (LinearSVC)...")
+    svm_model = LinearSVC()
+    svm_model.fit(X_train, y_train)
+    y_pred_svm = svm_model.predict(X_test)
+    print("SVM Classification Report:")
+    print(classification_report(y_test, y_pred_svm))
+
 
